@@ -12,7 +12,7 @@ WordPress plugin that combines, minifies, and compresses JS files.
 
 == Description ==
 
-WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory.
+WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory. Also see the companion plugin, [Combine CSS](http://wordpress.org/extend/plugins/combine-css/).
 
 Features include:
 
