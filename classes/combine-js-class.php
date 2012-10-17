@@ -397,7 +397,7 @@ class CombineJS {
 			$fp = fopen( $this->$tmp_file, "w" );
 			if ( flock( $fp, LOCK_EX ) ) { // do an exclusive lock
 				if ( $this->settings_data['compress'] == 'Yes' ) {
-                                        $content = '<?php if ( extension_loaded( "zlib" ) ) { ob_start("ob_gzhandler"); } header( "Content-type: text/css" ); $offset = 3600 * 24 * 7; ' .
+                                        $content = '<?php if ( extension_loaded( "zlib" ) ) { ob_start("ob_gzhandler"); } header( "Content-type: text/javascript" ); $offset = 3600 * 24 * 7; ' .
                                                 'header( "Cache-Control: max-age=300, must-revalidate" ); header( "Expires: " . gmdate( "D, d M Y H:i:s", time() + $offset ) . " GMT" ); ?>' .
                                                 $content . '<?php if( extension_loaded( "zlib" ) ){ ob_end_flush(); } ?>';
                                 }
