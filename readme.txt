@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.4.2
-Stable tag: 0.2
+Stable tag: 0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ WordPress plugin that combines, minifies, and compresses JS files.
 
 == Description ==
 
-WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory. Also see the companion plugin, [Combine CSS](http://wordpress.org/extend/plugins/combine-css/).
+WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory. This plugin uses jsmin.php - PHP implementation of Douglas Crockford's JSMin. Also see the companion plugin, [Combine CSS](http://wordpress.org/extend/plugins/combine-css/).
 
 Features include:
 
@@ -37,6 +37,12 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 0.3 =
+* Note: Version 0.3 uses a file (js.php) within the plugin directory to serve combined JavaScript files. Also, it requires a tmp directory to be created within the plugin directory; the plugin will create the directory automatically if it has the permission to do so. View the settings page after updating to version 0.3, and it will let you know what commands need to be run, if any.
+* Created standalone script with token argument to serve combined CSS file.
+* Created tmp directory that allows WP settings to be stored in a file.
+* Added newline after minified content that appears to fix some reported JavaScript errors.
 
 = 0.2 =
 * Fix mime type

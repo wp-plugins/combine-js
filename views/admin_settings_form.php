@@ -3,6 +3,12 @@
                 <h2><?php _e( self::pname, self::nspace ); ?> Settings</h2>
 <?php if ( $_POST[self::nspace . '_update_settings'] ): ?>
                 <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Settings saved.</strong></p></div>
+<?php elseif ( ! file_exists( $this->tmp_dir ) ): ?>
+                <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Temporary directory does not exist. You will need to manually create this directory by using these commands:</strong> <ul><li>mkdir <?php echo $this->tmp_dir; ?>;</li><li>chmod 777 <?php echo $this->tmp_dir; ?>;</li></ul></p></div>
+<?php elseif ( ! file_exists( $this->js_settings_path ) ): ?>
+                <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Settings file does not exist. You will need to manually create this file by using these commands:</strong> <ul><li>mkdir <?php echo $this->js_settings_path; ?>;</li><li>chmod 666 <?php echo $this->js_settings_path; ?>;</li></ul></p></div>
+<?php elseif( ! is_writable( $this->js_settings_path ) ): ?>
+                <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Settings file is not writable. You will need to manually fix permissions by using this command:</strong> <ul><li>chmod 666 <?php echo $this->js_settings_path; ?>;</li></ul></p></div>
 <?php endif; ?>
                 <form method="post">
                     <table class="form-table">

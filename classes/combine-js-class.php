@@ -7,6 +7,8 @@ class CombineJS {
         */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
+	const version = 0.3;
+
         protected $_plugin_file;
         protected $_plugin_dir;
         protected $_plugin_path;
@@ -14,15 +16,17 @@ class CombineJS {
 
 	var $cachetime = '';
 	var $create_cache = false;
-	var $combine_js_path = '';
-	var $combine_js_uri = '';
+	var $upload_path = '';
+	var $upload_uri = '';
 	var $js_domain = '';
 	var $js_path = '';
 	var $js_path_footer = '';
         var $js_uri = '';
-	var $js_footer_uri = '';
+	var $js_uri_footer = '';
         var $js_path_tmp = '';
-	var $js_path_footer_tmp = '';
+	var $js_path_tmp_footer = '';
+	var $js_token = '';
+	var $js_settings_path = '';
 	var $settings_fields = array();
 	var $settings_data = array();
 	var $js_files_ignore = array( 'admin-bar.js' );
@@ -63,21 +67,12 @@ class CombineJS {
                 // add ignore files
 
                 $ignore_list = explode( "\n", $this->settings_data['ignore_files'] );
-                foreach ( $ignore_list as $item ) {
-                        $this->js_files_ignore[] = $item;
-                }
-
+                foreach ( $ignore_list as $item ) $this->js_files_ignore[] = $item;
 		$this->debug( 'Ignore files: ' . implode( ', ', $this->js_files_ignore ) );
 
-		// set file path and uri
+		// check upload dirs
 
-		$upload_dir = wp_upload_dir();
-		$this->combine_js_path = $upload_dir['basedir'] . '/' . self::nspace . '/';
-		$this->combine_js_uri = $upload_dir['baseurl'] . '/' . self::nspace . '/';
-
-		// make sure js directory exists
-
-		if ( ! file_exists( $this->combine_js_path ) ) mkdir ( $this->combine_js_path );
+		$this->check_upload_dirs();
 
 		if ( is_admin() ) {
 
@@ -130,7 +125,11 @@ class CombineJS {
 						);
 		}
 		elseif ( strstr( $_SERVER['REQUEST_URI'], 'wp-login' ) || strstr( $_SERVER['REQUEST_URI'], 'gf_page=' ) || strstr( $_SERVER['REQUEST_URI'], 'preview=' ) ) {}
+		elseif ( ! file_exists( $this->js_settings_path ) ) {}
 		else {
+
+			// gather and install functions
+
 			add_action( 'wp_print_scripts', array( $this, 'gather_js' ), 500 );
 			add_action( 'wp_head', array( $this, 'install_combined_js' ), 500 );
 			add_action( 'wp_footer', array( $this, 'install_combined_js_footer' ), 500 );
@@ -141,6 +140,46 @@ class CombineJS {
 			remove_action( 'wp_head', 'adjacent_posts_rel_link' );
 		}
         }
+
+	/**
+	*Check upload dirs
+	*
+	*@return void
+	*@since 0.3
+	*/
+	function check_upload_dirs() {
+
+		// make sure upload dirs exist and set file path and uri
+
+		$upload_dir = wp_upload_dir();
+		if ( ! file_exists( $upload_dir['basedir'] ) ) mkdir ( $upload_dir['basedir'] );
+		$this->upload_path = $upload_dir['basedir'] . '/' . self::nspace . '/';
+		$this->upload_uri = $upload_dir['baseurl'] . '/' . self::nspace . '/';
+		if ( ! file_exists( $this->upload_path ) ) mkdir ( $this->upload_path );
+
+		// create tmp directory
+
+		$this->create_tmp_dir();
+
+		// write settings to temp file so that js script has access to WP settings without having to load WP infrastructure
+
+		$this->js_settings_path = $this->tmp_dir . $_SERVER['HTTP_HOST'] . '-settings.dat';
+		if ( $this->cache_expired( $this->js_settings_path ) ) {
+			$args = array( 'upload_path' => $this->upload_path, 'compress' => $this->settings_data['compress'] );
+			$this->write_file( $this->js_settings_path, serialize( $args ) );
+		}
+	}
+
+	/**
+	*Create tmp dir
+	*
+	*@return void
+	*@since 0.3
+	*/
+	function create_tmp_dir() {
+		$this->tmp_dir = $this->get_plugin_path() . '/tmp/';
+		if ( ! file_exists( $this->tmp_dir ) ) mkdir ( $this->tmp_dir );
+	}
 
         /**
         *Translation
@@ -161,9 +200,7 @@ class CombineJS {
 	function cache_expired ( $path ) {
 		$mtime = 0;
 		if( file_exists( $path ) ) $mtime = @filemtime( $path );
-		$now = time();
-		$transpired = $now - $mtime;
-		if ( $transpired > $this->cachetime ) return true;
+		if ( ( time() - $mtime ) > $this->cachetime ) return true;
 		return false;
 	}
 
@@ -196,8 +233,6 @@ class CombineJS {
         *@since 0.1
         */
         function gather_js () {
-
-		if ( is_admin() ) return;
 
 		$this->debug( 'Function gather_js' );
 
@@ -247,25 +282,21 @@ class CombineJS {
                         }
                 }
 
-                // get name of file based on md5 hash of js handles
+                // get name of file (token) based on md5 hash of js handles
 
-                $file_name = md5( implode( '', array_keys( $this->js_handles_found ) ) );
+                $this->js_token = md5( implode( '', array_keys( $this->js_handles_found ) ) );
 
                 // set paths
 
-                $this->js_path = $this->combine_js_path . $file_name . '.js';
-		if ( $this->settings_data['compress'] == 'Yes' ) $this->js_path .= '.php';
-                $this->js_path_footer = $this->combine_js_path . $file_name . '-footer.js';
-		if ( $this->settings_data['compress'] == 'Yes' ) $this->js_path_footer .= '.php';
-                $this->js_uri = $this->combine_js_uri . $file_name . '.js';
-		if ( $this->settings_data['compress'] == 'Yes' ) $this->js_uri .= '.php';
-                $this->js_footer_uri = $this->combine_js_uri . $file_name . '-footer.js';
-		if ( $this->settings_data['compress'] == 'Yes' ) $this->js_footer_uri .= '.php';
+                $this->js_path = $this->upload_path . $this->js_token . '.js';
+                $this->js_path_footer = $this->upload_path . $this->js_token . '-footer.js';
+                $this->js_uri = $this->upload_uri . $this->js_token . '.js';
+                $this->js_uri_footer = $this->upload_uri . $this->js_token . '-footer.js';
                 $this->js_path_tmp = $this->js_path . '.tmp';
-                $this->js_path_footer_tmp = $this->js_path_footer . '.tmp';
+                $this->js_path_tmp_footer = $this->js_path_footer . '.tmp';
 
 		if ( $this->cache_expired( $this->js_path ) && $this->cache_expired( $this->js_path_tmp )
-			&& $this->cache_expired( $this->js_path_footer ) && $this->cache_expired( $this->js_path_footer_tmp ) )  {
+			&& $this->cache_expired( $this->js_path_footer ) && $this->cache_expired( $this->js_path_tmp_footer ) )  {
 			$this->create_cache = true;
 		}
 
@@ -353,21 +384,16 @@ class CombineJS {
 						$footer_content .= $this->compress( $js_content, $handle, $js_src );
 						unset( $this->js_footer_handles_found[$handle] );
                                         }
-                                        else {
-                                                $header_content .= $this->compress( $js_content, $handle, $js_src );
-					}
+                                        else $header_content .= $this->compress( $js_content, $handle, $js_src );
 					$this->debug( "$in_footer: " . $js_src );
 				}
 			}
-			else {
-				$this->debug( 'SRC NOT FOUND: ' . ABSPATH . $js_src );
-			}
+			else $this->debug( 'SRC NOT FOUND: ' . ABSPATH . $js_src );
 		}
 
 		// cache content to file system
 
 		$this->cache_content( $header_content, $footer_content );
-
 	}
 
         /**
@@ -379,10 +405,8 @@ class CombineJS {
 	function cache_content ( $header_content, $footer_content ) {
 		$this->debug( 'Function cache_content' );
 		if ( @strlen( $header_content ) || @strlen( $footer_content ) ) {
-			$header_file = 'js_path_tmp';
-			$footer_file = 'js_path_footer_tmp';
-			if ( @strlen( $header_content ) ) $this->cache( $header_file, $header_content );
-			if ( @strlen( $footer_content ) ) $this->cache( $footer_file, $footer_content );
+			if ( @strlen( $header_content ) ) $this->cache( 'js_path_tmp', $header_content );
+			if ( @strlen( $footer_content ) ) $this->cache( 'js_path_tmp_footer', $footer_content );
 		}
 	}
 
@@ -392,20 +416,24 @@ class CombineJS {
         *@return void
         *@since 0.1
         */
-	function cache ( $tmp_file, $content ) {
-		if ( ! file_exists( $this->$tmp_file ) ) {
-			$fp = fopen( $this->$tmp_file, "w" );
-			if ( flock( $fp, LOCK_EX ) ) { // do an exclusive lock
-				if ( $this->settings_data['compress'] == 'Yes' ) {
-                                        $content = '<?php if ( extension_loaded( "zlib" ) ) { ob_start("ob_gzhandler"); } header( "Content-type: text/javascript" ); $offset = 3600 * 24 * 7; ' .
-                                                'header( "Cache-Control: max-age=300, must-revalidate" ); header( "Expires: " . gmdate( "D, d M Y H:i:s", time() + $offset ) . " GMT" ); ?>' .
-                                                $content . '<?php if( extension_loaded( "zlib" ) ){ ob_end_flush(); } ?>';
-                                }
-				fwrite( $fp, $content );
-				flock( $fp, LOCK_UN ); // release the lock
-			}
-			fclose( $fp );
+	function cache( $tmp_file, $content ) {
+		if ( ! file_exists( $this->$tmp_file ) ) $this->write_file( $this->$tmp_file, $content );
+	}
+
+	/**
+	*Write file
+	*
+	*@return void
+	*@since 0.3
+	*/
+	function write_file ( $file, $content ) {
+		$fp = fopen( $file, "w" );
+		$this->debug( $file . ' created' );
+		if ( flock( $fp, LOCK_EX ) ) { // do an exclusive lock
+			fwrite( $fp, $content );
+			flock( $fp, LOCK_UN ); // release the lock
 		}
+		fclose( $fp );
 	}
 
         /**
@@ -454,14 +482,12 @@ class CombineJS {
         function compress( $content, $handle, $src='' ) {
                 $this->debug( '     -> compress ' . $handle );
                 $minify = true;
-                if ( preg_match( "/(\-|\.)min/", $src ) ) {
-                        $minify = false;
-                }
+                if ( preg_match( "/(\-|\.)min/", $src ) ) $minify = false;
                 if ( $minify ) {
                         require_once $this->get_plugin_path() . '/classes/jsmin.php';
                         return JSMin::minify( $content );
                 }
-                else return $content;
+                else return $content . "\n";
         }
 
         /**
@@ -490,7 +516,7 @@ class CombineJS {
 		$this->debug( 'Function add js to header' );
 		if ( file_exists( $this->js_path ) ) {
 			$this->debug( '     -> add js tag to header' );
-			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->js_uri ) . '" charset="UTF-8"></script>' . "\n";
+			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;ver=' . self::version ) . '" charset="UTF-8"></script>' . "\n";
 		}
 	}
 
@@ -502,9 +528,9 @@ class CombineJS {
         */
         function install_combined_js_footer () {
 		$this->debug( 'Function install_combined_js_footer' );
-                if ( $this->create_cache && file_exists( $this->js_path_footer_tmp ) && $this->cache_expired( $this->js_path_footer ) ) {
-                        $this->debug( '     -> move ' . $this->js_path_footer_tmp . ", " . $this->js_path_footer );
-                        @rename( $this->js_path_footer_tmp, $this->js_path_footer );
+                if ( $this->create_cache && file_exists( $this->js_path_tmp_footer ) && $this->cache_expired( $this->js_path_footer ) ) {
+                        $this->debug( '     -> move ' . $this->js_path_tmp_footer . ", " . $this->js_path_footer );
+                        @rename( $this->js_path_tmp_footer, $this->js_path_footer );
                 }
                 else $this->debug( '     -> no footer install' );
 
@@ -513,7 +539,7 @@ class CombineJS {
 		$this->debug( 'Function add_combined_js_footer' );
 		if ( file_exists( $this->js_path_footer ) ) {
 			$this->debug( '     -> add js tag to footer' );
-			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->js_footer_uri ) . '"></script>' . "\n";
+			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;footer=1&#038;ver=' . self::version ) . '"></script>' . "\n";
 		}
 
 		// add handles
@@ -661,8 +687,8 @@ class CombineJS {
         */
 	function delete_cache () {
 		$this->debug( 'Function delete_cache' );
-		$this->debug( 'Deleting files in: ' . $this->combine_js_path );
-		foreach( glob( $this->combine_js_path . "/*.*" ) as $file ) {
+		$this->debug( 'Deleting files in: ' . $this->upload_path );
+		foreach( glob( $this->upload_path . "/*.*" ) as $file ) {
 			$this->debug( "	" . 'Deleting file: ' . $file );
 			unlink( $file );
 		}
