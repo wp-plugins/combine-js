@@ -7,7 +7,7 @@ class CombineJS {
         */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 0.3;
+	const version = 0.4;
 
         protected $_plugin_file;
         protected $_plugin_dir;
@@ -479,7 +479,7 @@ class CombineJS {
         *@return string
         *@since 0.1
         */
-        function compress( $content, $handle, $src='' ) {
+        function compress( $content='', $handle='', $src='' ) {
                 $this->debug( '     -> compress ' . $handle );
                 $minify = true;
                 if ( preg_match( "/(\-|\.)min/", $src ) ) $minify = false;

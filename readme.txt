@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.4.2
-Stable tag: 0.3
+Stable tag: 0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 0.4 =
+* Fixed php warning: Warning:  Missing argument 2 for CombineJS::compress()
 
 = 0.3 =
 * Note: Version 0.3 uses a file (js.php) within the plugin directory to serve combined JavaScript files. Also, it requires a tmp directory to be created within the plugin directory; the plugin will create the directory automatically if it has the permission to do so. View the settings page after updating to version 0.3, and it will let you know what commands need to be run, if any.
