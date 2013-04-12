@@ -1,7 +1,7 @@
             <div class="wrap">
                 <div id="icon-options-general" class="icon32"><br/></div>
                 <h2><?php _e( self::pname, self::nspace ); ?> Settings</h2>
-<?php if ( $_POST[self::nspace . '_update_settings'] ): ?>
+<?php if ( isset( $_POST[self::nspace . '_update_settings'] ) ): ?>
                 <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Settings saved.</strong></p></div>
 <?php elseif ( ! file_exists( $this->tmp_dir ) ): ?>
                 <div class="updated settings-error" id="setting-error-settings_updated"><p><strong>Temporary directory does not exist. You will need to manually create this directory by using these commands:</strong> <ul><li>mkdir <?php echo $this->tmp_dir; ?>;</li><li>chmod 777 <?php echo $this->tmp_dir; ?>;</li></ul></p></div>
@@ -38,7 +38,7 @@
 <?php elseif( $val['type'] == 'textarea' ): ?>
                                 <textarea class="regular-text" cols="60" rows="10" name="<?php echo $key; ?>" id="<?php echo $key; ?>"><?php echo stripslashes( htmlspecialchars( $this->get_settings_value( $key ) ) ); ?></textarea>
 <?php endif; ?>
-<?php if($val['description']): ?>
+<?php if( isset( $val['description'] ) ): ?>
                                 <span class="description"><?php echo $val['description']; ?></span>
 <?php endif; ?>
                             </td>

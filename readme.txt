@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.4.2
-Stable tag: 0.4
+Stable tag: 0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,10 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 0.5 =
+* Fixed notices and warnings in error log (thanks to pha3z).
+* Added glob function to remove cached files when settings saved.
 
 = 0.4 =
 * Fixed php warning: Warning:  Missing argument 2 for CombineJS::compress()
