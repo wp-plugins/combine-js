@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.4.2
-Stable tag: 0.5
+Stable tag: 0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ WordPress plugin that combines, minifies, and compresses JS files.
 
 == Description ==
 
-WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory. This plugin uses jsmin.php - PHP implementation of Douglas Crockford's JSMin. Also see the companion plugin, [Combine CSS](http://wordpress.org/extend/plugins/combine-css/).
+WordPress plugin that combines, minifies, and compresses JS files. The JS files that this plugin combines and minifies must be enqueued by using wp_enqueue_script. The plugin combines and minifies JS and writes the output into files in the uploads directory. This plugin uses jsmin.php - PHP implementation of Douglas Crockford's JSMin. This plugin combines all local JS files into a single file and includes the file in the footer of the theme (requires wp_footer being used in your theme files). Also see the companion plugin, [Combine CSS](http://wordpress.org/extend/plugins/combine-css/).
 
 Features include:
 
@@ -38,6 +38,10 @@ You can debug the plugin by activating the debug option on the settings page and
 
 == Changelog ==
 
+= 0.6 =
+* Fixed notices and warnings in error log.
+* Simplified functionality by including one single JS file in the footer of the site.
+
 = 0.5 =
 * Fixed notices and warnings in error log (thanks to pha3z).
 * Added glob function to remove cached files when settings saved.
@@ -59,6 +63,9 @@ You can debug the plugin by activating the debug option on the settings page and
 * First release!
 
 == Upgrade Notice ==
+
+= 0.6 =
+This version now includes the combined JS file in the footer of the site. 0.5 and before would allow 2 combined files to exist for header and footer JS files, but it now requires the JS to be in the footer. You can use the ignore files feature to exempt some JS files from this constraint.
 
 = 0.1 =
 First release!
