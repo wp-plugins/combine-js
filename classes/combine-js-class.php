@@ -7,7 +7,7 @@ class CombineJS {
     */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 0.7;
+	const version = 0.8;
 
     protected $_plugin_file;
     protected $_plugin_dir;
@@ -160,10 +160,10 @@ class CombineJS {
 		// make sure upload dirs exist and set file path and uri
 
 		$upload_dir = wp_upload_dir();
-		if ( ! file_exists( $upload_dir['basedir'] ) ) mkdir ( $upload_dir['basedir'] );
+		if ( ! file_exists( $upload_dir['basedir'] ) ) wp_mkdir_p( $upload_dir['basedir'] );
 		$this->upload_path = $upload_dir['basedir'] . '/' . self::nspace . '/';
 		$this->upload_uri = $upload_dir['baseurl'] . '/' . self::nspace . '/';
-		if ( ! file_exists( $this->upload_path ) ) mkdir ( $this->upload_path );
+		if ( ! file_exists( $this->upload_path ) ) wp_mkdir_p( $this->upload_path );
 
 		// create tmp directory
 
@@ -192,7 +192,7 @@ class CombineJS {
 	*/
 	function create_tmp_dir() {
 		$this->tmp_dir = $this->get_plugin_path() . '/tmp/';
-		if ( ! file_exists( $this->tmp_dir ) && is_writable( dirname( $this->tmp_dir ) ) ) mkdir ( $this->tmp_dir );
+		if ( ! file_exists( $this->tmp_dir ) ) wp_mkdir_p( $this->tmp_dir );
 	}
 
     /**
