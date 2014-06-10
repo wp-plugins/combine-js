@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.4.2
-Stable tag: 0.8
+Stable tag: 0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 0.9 =
+* Use system tmp directory if plugin dir is not writable.
 
 = 0.8 =
 * Additional fix to tmp directory creation; change mkdir to wp_mkdir_p.
