@@ -7,7 +7,7 @@ class CombineJS {
     */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 0.9;
+	const version = 1.0;
 
     protected $_plugin_file;
     protected $_plugin_dir;
@@ -192,7 +192,7 @@ class CombineJS {
 	*/
 	function create_tmp_dir() {
 		$this->tmp_dir = $this->get_plugin_path() . '/tmp/';
-		if ( ! is_writable( dirname( $this->tmp_dir ) ) ) $this->tmp_dir = sys_get_temp_dir();
+		if ( ! is_writable( dirname( $this->tmp_dir ) ) ) $this->tmp_dir = sys_get_temp_dir() . '/';
 		if ( ! file_exists( $this->tmp_dir ) ) wp_mkdir_p( $this->tmp_dir );
 	}
 

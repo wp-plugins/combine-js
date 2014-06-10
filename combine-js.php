@@ -4,7 +4,7 @@ Plugin Name: Combine JS
 Plugin URI: http://www.weareconvoy.com
 Description: WordPress plugin that attempts to combine, minify, and compress JS.
 Author: Convoy
-Version: 0.9
+Version: 1.0
 Author URI: http://www.weareconvoy.com
 Requires at least: 3.0.0
 Tested up to: 3.4.2
