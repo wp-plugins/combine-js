@@ -7,7 +7,7 @@ class CombineJS {
     */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.1;
+	const version = 1.2;
 
     protected $_plugin_file;
     protected $_plugin_dir;
@@ -19,14 +19,18 @@ class CombineJS {
 	var $upload_uri = '';
 	var $js_domain = '';
 	var $js_path = '';
+	var $js_path_footer = '';
     var $js_uri = '';
+	var $js_uri_footer = '';
     var $js_path_tmp = '';
+	var $js_path_tmp_footer = '';
 	var $js_token = '';
 	var $js_settings_path = '';
 	var $settings_fields = array();
 	var $settings_data = array();
 	var $js_files_ignore = array( 'admin-bar.js', 'admin-bar.min.js' );
 	var $js_handles_found = array();
+	var $js_footer_handles_found = array();
 	var $debug = false;
 
     /**
@@ -140,7 +144,8 @@ class CombineJS {
 			// gather and install functions
 
 			add_action( 'wp_print_scripts', array( $this, 'gather_js' ), 500 );
-			add_action( 'wp_footer', array( $this, 'install_combined_js' ), 501 );
+			add_action( 'wp_head', array( $this, 'install_combined_js' ), 501 );
+			add_action( 'wp_footer', array( $this, 'install_combined_js_footer' ), 502 );
 
 			// get rid of browser prefetching of next page from link rel="next" tag
 
@@ -262,6 +267,10 @@ class CombineJS {
         $to_do = $wp_scripts->to_do;
         foreach ( $to_do as $key => $handle ) {
 
+			// keep track of footer files
+
+			if ( isset( $wp_scripts->registered[$handle]->extra['group'] ) ) $this->js_footer_handles_found[$handle] = $js_src;
+
             $js_src = $this->strip_domain( $wp_scripts->registered[$handle]->src );
             $js_file = $this->get_file_from_src( $js_src );
             if ( isset( $wp_scripts->registered[$handle]->extra['data'] ) ) {
@@ -302,8 +311,11 @@ class CombineJS {
         // set paths
 
         $this->js_path = $this->upload_path . $this->js_token . '.js';
+		$this->js_path_footer = $this->upload_path . $this->js_token . '-footer.js';
         $this->js_uri = $this->upload_uri . $this->js_token . '.js';
+		$this->js_uri_footer = $this->upload_uri . $this->js_token . '-footer.js';
         $this->js_path_tmp = $this->js_path . '.tmp';
+		$this->js_path_tmp_footer = $this->js_path_footer . '.tmp';
 
         // loop through and unset scripts
 
@@ -364,7 +376,7 @@ class CombineJS {
 
 		// loop through found scripts and cache them to file system
 
-		$header_content = '';
+		$header_content = $footer_content = '';
 		foreach ( $this->js_handles_found as $handle => $js_src ) {
 			$js_file = $this->get_file_from_src( $js_src );
 			$context = $this->get_context( $js_src );
@@ -376,14 +388,18 @@ class CombineJS {
 				$js_content = '';
 				if ( preg_match( "/\.php/", $js_src ) ) $js_content = $this->curl_file_get_contents ( $js_src );
 				else $js_content = file_get_contents( ABSPATH . $js_src );
-				$header_content .= $this->compress( $js_content, $handle, $js_src );
+				if ( isset( $this->js_footer_handles_found[$handle] ) ) {
+					$footer_content .= $this->compress( $js_content, $handle, $js_src );
+					unset( $this->js_footer_handles_found[$handle] );
+				}
+				else $header_content .= $this->compress( $js_content, $handle, $js_src );
 			}
 			else $this->debug( 'SRC NOT FOUND: ' . ABSPATH . $js_src );
 		}
 
 		// cache content to file system
 
-		$this->cache_content( $header_content );
+		$this->cache_content( $header_content, $footer_content );
 	}
 
     /**
@@ -392,11 +408,13 @@ class CombineJS {
     *@return void
     *@since 0.1
     */
-	function cache_content ( $header_content ) {
-		if ( @strlen( $header_content ) ) {
-			if ( @strlen( $header_content ) ) $this->cache( 'js_path_tmp', $header_content );
-		}
-	}
+    function cache_content ( $header_content, $footer_content ) {
+        $this->debug( 'Function cache_content' );
+        if ( @strlen( $header_content ) || @strlen( $footer_content ) ) {
+            if ( @strlen( $header_content ) ) $this->cache( 'js_path_tmp', $header_content );
+            if ( @strlen( $footer_content ) ) $this->cache( 'js_path_tmp_footer', $footer_content );
+        }
+    }
 
     /**
     *Write data to file system
@@ -404,9 +422,9 @@ class CombineJS {
     *@return void
     *@since 0.1
     */
-	function cache( $tmp_file, $content ) {
-		if ( ! file_exists( $this->$tmp_file ) ) $this->write_file( $this->$tmp_file, $content );
-	}
+    function cache( $tmp_file, $content ) {
+        if ( ! file_exists( $this->$tmp_file ) ) $this->write_file( $this->$tmp_file, $content );
+    }
 
     /**
     *Write file
@@ -495,7 +513,7 @@ class CombineJS {
 
 			$this->combine_js();
 
-			$this->debug( 'Create Combined File (' . $this->js_path . ')' );
+			$this->debug( 'Create Combined Header File (' . $this->js_path . ')' );
 			@rename( $this->js_path_tmp, $this->js_path );
 		}
 
@@ -505,6 +523,28 @@ class CombineJS {
 			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;ver=' . self::version ) . '" charset="UTF-8"></script>' . "\n";
 		}
 	}
+
+    /**
+    *Move temp file cache to actual file cache
+    *
+    *@return void
+    *@since 0.1
+    */
+    function install_combined_js_footer () {
+
+		// move temp file to real path
+
+		if ( $this->cache_expired( $this->js_path_footer ) && $this->cache_expired( $this->js_path_tmp_footer ) )  {
+			$this->debug( 'Create Combined Footer File (' . $this->js_path_footer . ')' );
+			@rename( $this->js_path_tmp_footer, $this->js_path_footer );
+        }
+
+        // add script tag
+
+        if ( file_exists( $this->js_path_footer ) ) {
+            echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;footer=1&#038;ver=' . self::version ) . '"></script>' . "\n";
+        }
+    }
 
     /**
     *Add settings page
