@@ -7,7 +7,7 @@ class CombineJS {
     */
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.0;
+	const version = 1.1;
 
     protected $_plugin_file;
     protected $_plugin_dir;

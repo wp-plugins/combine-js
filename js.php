@@ -2,7 +2,9 @@
 
 // this file servers as the interface to the combined JS file that is written in the WP upload directories
 
-$settings_path = 'tmp/' . $_SERVER['HTTP_HOST'] . '-settings.dat';
+$tmp_dir = 'tmp/';
+if ( ! is_writable( dirname( $tmp_dir ) ) ) $tmp_dir = sys_get_temp_dir() . '/';
+$settings_path = $tmp_dir . $_SERVER['HTTP_HOST'] . '-settings.dat';
 if ( file_exists( $settings_path ) && strlen( $_GET['token'] ) == 32 ) {
     $settings = file_get_contents( $settings_path );
     $settings = unserialize( $settings );
