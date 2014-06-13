@@ -242,8 +242,8 @@ class CombineJS {
 
 		// loop through all scripts and store them in options
 
-		$queue = $wp_scripts->queue;
-        $wp_scripts->all_deps( $queue );
+		//$queue = $wp_scripts->queue;
+        //$wp_scripts->all_deps( $queue );
         $to_do = $wp_scripts->to_do;
         foreach ( $to_do as $key => $handle ) {
 
