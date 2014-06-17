@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.9.1
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 1.4 =
+* Optimized how js files are gathered and combined. Added more debugging and created a few functions.
 
 = 1.3 =
 * Changed gathering of js by using print_scripts_array filter instead of wp_print_scripts. Plugin is now compatible with the JavaScript to Footer plugin.
