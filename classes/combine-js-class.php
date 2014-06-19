@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.4;
+	const version = 1.5;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -32,6 +32,7 @@ class CombineJS {
 	var $js_handles_found = array();
 	var $js_footer_handles_found = array();
 	var $debug = false;
+	var $footer = false;
 	var $combined = false;
 	var $paths_set = false;
 
@@ -84,29 +85,35 @@ class CombineJS {
 								'default' => get_option( 'siteurl' )
 								),
 						'cachetime' => array(
-								'label' => 'Cache Expiration',
+								'label' => 'Cache expiration',
 								'instruction' => 'How often to refresh JS files in seconds.',
 								'type' => 'select',
 								'values' => array( '60' => '1 minute', '300' => '5 minutes', '900' => '15 minutes', '1800' => '30 minutes', '3600' => '1 hour' ),
 								'default' => '300'
 								),
 						'htaccess_user_pw' => array(
-								'label' => 'Username and Password',
+								'label' => 'Username and password',
 								'instruction' => 'Use when site is accessed behind htaccess authentication -- syntax: username:password.',
 								'type' => 'text',
 								'default' => 'username:password'
 								),
 						'ignore_files' => array(
-								'label' => 'JS Files to Ignore',
+								'label' => 'JS files to ignore',
 								'instruction' => 'Enter one per line. Only use the name of the JS file (like main.js). You can be more specific about what JS file to ignore by specifying the plugin and then the JS file (like plugin:main.js).',
 								'type' => 'textarea'
 								),
 						'compress' => array(
-								'label' => 'GZip Compress JS output?',
+								'label' => 'GZIP compress JS output?',
 								'type' => 'select',
 								'values' => array( 'No' => 'No', 'Yes' => 'Yes' ),
-								'default' => 'Yes'
+								'default' => 'No'
 								),
+						'footer' => array(
+                                'label' => 'Move all JS to footer?',
+                                'type' => 'select',
+                                'values' => array( 'No' => 'No', 'Yes' => 'Yes' ),
+                                'default' => 'No'
+                                ),
 						'debug' => array(
 								'label' => 'Turn on debugging?',
 								'type' => 'select',
@@ -127,6 +134,7 @@ class CombineJS {
 		$this->js_domain = $this->get_settings_value( 'js_domain' );
 		if ( ! @strlen( $this->js_domain ) ) $this->js_domain = get_option( 'siteurl' );
 		if ( $this->settings_data['debug'] == 'Yes' ) $this->debug = true;
+		if ( $this->settings_data['footer'] == 'Yes' ) $this->footer = true;
 		if ( ! $this->settings_data['compress'] ) $this->settings_data['compress'] = 'Yes';
 
 		// check upload dirs
@@ -539,7 +547,7 @@ class CombineJS {
 	}
 
 	/**
-	*Move temp file cache to actual file cache
+	*Move temp file cache to actual file cache and add script tag to header
 	*
 	*@return void
 	*@since 0.1
@@ -570,13 +578,13 @@ class CombineJS {
 
 		// add script tag
 
-		if ( file_exists( $this->js_path ) ) {
+		if ( file_exists( $this->js_path ) && ! $this->footer ) {
 			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;ver=' . self::version ) . '" charset="UTF-8"></script>' . "\n";
 		}
 	}
 
 	/**
-	*Move temp file cache to actual file cache
+	*Move temp file cache to actual file cache and add script tag to footer
 	*
 	*@return void
 	*@since 0.1
@@ -607,8 +615,10 @@ class CombineJS {
 
 		// add script tag
 
-		if ( file_exists( $this->js_path_footer ) ) {
-			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?token=' . $this->js_token . '&#038;footer=1&#038;ver=' . self::version ) . '"></script>' . "\n";
+		if ( file_exists( $this->js_path_footer ) || $this->footer ) {
+			$query_string = 'token=' . $this->js_token . '&#038;footer=1&#038;ver=' . self::version;
+			if ( $this->footer ) $query_string .= '&#038;both=1';
+			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?' . $query_string ) . '"></script>' . "\n";
 		}
 	}
 
