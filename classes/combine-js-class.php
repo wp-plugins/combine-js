@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.5;
+	const version = 1.6;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -153,7 +153,7 @@ class CombineJS {
 
 			// add ignore files
 
-			$ignore_list = explode( "\n", $this->settings_data['ignore_files'] );
+			$ignore_list = preg_split( "/\r\n|\n|\r/", $this->settings_data['ignore_files'] );
 			foreach ( $ignore_list as $item ) $this->js_files_ignore[] = $item;
 			$this->debug( 'ignore list: ' . implode( ', ', $this->js_files_ignore ) );
 
