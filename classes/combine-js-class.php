@@ -322,7 +322,7 @@ class CombineJS {
 				$this->js_handles_found[$handle] = $js_src;
 				unset( $to_do[$key] );
 			}
-			elseif ( $this->footer ) {
+			elseif ( $this->footer && @strlen( $wp_scripts->registered[$handle]->src ) ) {
 
 				// keep track of external and/or ignored js files to move to footer
 
