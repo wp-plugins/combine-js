@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.7;
+	const version = 1.8;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -33,6 +33,8 @@ class CombineJS {
 	var $js_footer_handles_found = array();
 	var $debug = false;
 	var $footer = false;
+	var $move_to_footer_top = array();
+	var $move_to_footer_bottom = array();
 	var $combined = false;
 	var $paths_set = false;
 
@@ -320,6 +322,13 @@ class CombineJS {
 				$this->js_handles_found[$handle] = $js_src;
 				unset( $to_do[$key] );
 			}
+			elseif ( $this->footer ) {
+
+				// keep track of external and/or ignored js files to move to footer
+
+				if ( array_keys( $this->js_handles_found ) ) $this->move_to_footer_bottom[$handle] = $wp_scripts->registered[$handle]->src;
+				else $this->move_to_footer_top[$handle] = $wp_scripts->registered[$handle]->src;
+			}
 		}
 
 		if ( array_keys( $this->js_handles_found ) ) {
@@ -341,7 +350,7 @@ class CombineJS {
 				}
 			}
 		}
-		return $to_do;
+		if ( ! $this->footer ) return $to_do;
 	}
 
 	/**
@@ -613,6 +622,10 @@ class CombineJS {
 			@rename( $this->js_path_tmp_footer, $this->js_path_footer );
 		}
 
+		foreach ( $this->move_to_footer_top as $handle => $src ) {
+			echo "\t\t" . '<script type="text/javascript" src="' . $src . '"></script>' . "\n";
+		}
+
 		// add script tag
 
 		if ( file_exists( $this->js_path_footer ) || $this->footer ) {
@@ -620,6 +633,11 @@ class CombineJS {
 			if ( $this->footer ) $query_string .= '&#038;both=1';
 			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?' . $query_string ) . '"></script>' . "\n";
 		}
+
+		foreach ( $this->move_to_footer_bottom as $handle => $src ) {
+            echo "\t\t" . '<script type="text/javascript" src="' . $src . '"></script>' . "\n";
+        }
+
 	}
 
 	/**
