@@ -4,7 +4,7 @@ Donate link: http://WeAreConvoy.com
 Tags: Javascript, minify
 Requires at least: 3.0.1
 Tested up to: 3.9.1
-Stable tag: 1.6
+Stable tag: 1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,6 +37,9 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 1.7 =
+* Fixed issue related to moving all js to footer and ignore files.
 
 = 1.6 =
 * Changed explode to regex split for ignore list based on feedback from ckgrafico.

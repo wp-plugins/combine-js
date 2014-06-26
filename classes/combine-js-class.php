@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.6;
+	const version = 1.7;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -593,7 +593,7 @@ class CombineJS {
 
 		// if no header handles found, return
 
-        if ( ! @count( @array_keys( $this->js_footer_handles_found ) ) ) return;
+		if ( ! @count( @array_keys( $this->js_footer_handles_found ) ) && ! $this->footer ) return;
 
 		// set paths
 
