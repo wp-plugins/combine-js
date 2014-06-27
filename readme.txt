@@ -19,7 +19,8 @@ Features include:
 * option to change the JS domain if a CDN is used
 * option to change how often JS files get refreshed
 * option to exclude certain JS files from combining
-* option to turn on/off gzip compression
+* option to turn on/off GZIP compression
+* option to move all enqueued JS files to the footer of the site
 * option to turn on debugging
 
 == Installation ==
