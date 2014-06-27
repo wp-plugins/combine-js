@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.8;
+	const version = 1.9;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -29,14 +29,18 @@ class CombineJS {
 	var $settings_fields = array();
 	var $settings_data = array();
 	var $js_files_ignore = array( 'admin-bar.js', 'admin-bar.min.js' );
+
 	var $js_handles_found = array();
+    var $js_handles_count_first = 0;
+    var $js_handles_count_last = 0;
+    var $js_handles_order = array();
 	var $js_footer_handles_found = array();
-	var $debug = false;
 	var $footer = false;
-	var $move_to_footer_top = array();
-	var $move_to_footer_bottom = array();
+	var $move_to_footer = array();
+
 	var $combined = false;
 	var $paths_set = false;
+    var $debug = false;
 
 	/**
 	*Constructor
@@ -280,7 +284,12 @@ class CombineJS {
         if ( empty( $to_do ) ) return $to_do;
 
 		global $wp_scripts;
+        $handle_count = 0;
 		foreach ( $to_do as $key => $handle ) {
+
+            // keep order of all handles
+
+            $this->js_handles_order[$handle] = $handle_count++;
 
 			// keep track of footer files
 
@@ -321,13 +330,14 @@ class CombineJS {
 				$this->debug( $msg );
 				$this->js_handles_found[$handle] = $js_src;
 				unset( $to_do[$key] );
+                if ( ! $this->js_handles_count_first ) $this->js_handles_count_first = $handle_count;
+                $this->js_handles_count_last = $handle_count;
 			}
 			elseif ( $this->footer && @strlen( $wp_scripts->registered[$handle]->src ) ) {
 
 				// keep track of external and/or ignored js files to move to footer
 
-				if ( array_keys( $this->js_handles_found ) ) $this->move_to_footer_bottom[$handle] = $wp_scripts->registered[$handle]->src;
-				else $this->move_to_footer_top[$handle] = $wp_scripts->registered[$handle]->src;
+				$this->move_to_footer[$handle] = $wp_scripts->registered[$handle]->src;
 			}
 		}
 
@@ -622,7 +632,20 @@ class CombineJS {
 			@rename( $this->js_path_tmp_footer, $this->js_path_footer );
 		}
 
-		foreach ( $this->move_to_footer_top as $handle => $src ) {
+        // if move to footer set to yes,
+        // figure out what js should be above or below our combined file
+
+        $top = $bottom = array();
+        if ( $this->footer && array_keys( $this->move_to_footer ) ) {
+            foreach ( $this->move_to_footer as $handle => $src ) {
+                if ( $this->js_handles_order[$handle] < $this->js_handles_count_first ) $top[$handle] = $src;
+                else $bottom[$handle] = $src;
+            }
+        }
+
+        // add js above combined file
+
+        foreach ( $top as $handle => $src ) {
 			echo "\t\t" . '<script type="text/javascript" src="' . $src . '"></script>' . "\n";
 		}
 
@@ -634,7 +657,9 @@ class CombineJS {
 			echo "\t\t" . '<script type="text/javascript" src="' . str_replace( get_option( 'siteurl' ), $this->js_domain, $this->get_plugin_url() . 'js.php?' . $query_string ) . '"></script>' . "\n";
 		}
 
-		foreach ( $this->move_to_footer_bottom as $handle => $src ) {
+        // add js below combined file
+
+        foreach ( $bottom as $handle => $src ) {
             echo "\t\t" . '<script type="text/javascript" src="' . $src . '"></script>' . "\n";
         }
 
