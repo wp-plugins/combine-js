@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 1.9;
+	const version = 2.0;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -114,6 +114,12 @@ class CombineJS {
 								'values' => array( 'No' => 'No', 'Yes' => 'Yes' ),
 								'default' => 'No'
 								),
+						'compress_html' => array(
+                                'label' => 'GZIP Compress HTML output?',
+                                'type' => 'select',
+                                'values' => array( 'No' => 'No', 'Yes' => 'Yes' ),
+                                'default' => 'No'
+                                ),
 						'footer' => array(
                                 'label' => 'Move all JS to footer?',
                                 'type' => 'select',
@@ -142,6 +148,11 @@ class CombineJS {
 		if ( $this->settings_data['debug'] == 'Yes' ) $this->debug = true;
 		if ( $this->settings_data['footer'] == 'Yes' ) $this->footer = true;
 		if ( ! $this->settings_data['compress'] ) $this->settings_data['compress'] = 'Yes';
+		if ( ! $this->settings_data['compress_html'] ) $this->settings_data['compress_html'] = 'No';
+
+		// turn on output compression
+
+        if ( $this->settings_data['compress_html'] == 'Yes' ) ob_start( 'ob_gzhandler' );
 
 		// check upload dirs
 
@@ -211,17 +222,21 @@ class CombineJS {
 
 	}
 
-	/**
-	*Create tmp dir
-	*
-	*@return void
-	*@since 0.3
-	*/
-	function create_tmp_dir() {
-		$this->tmp_dir = $this->get_plugin_path() . '/tmp/';
-		if ( ! is_writable( dirname( $this->tmp_dir ) ) ) $this->tmp_dir = sys_get_temp_dir() . '/';
-		if ( ! file_exists( $this->tmp_dir ) ) wp_mkdir_p( $this->tmp_dir );
-	}
+    /**
+    *Create tmp dir
+    *
+    *@return void
+    *@since 0.3
+    */
+    function create_tmp_dir() {
+        $this->tmp_dir = $this->get_plugin_path() . '/tmp/';
+        if ( ! is_writable( dirname( $this->tmp_dir ) ) ) {
+            $this->tmp_dir = sys_get_temp_dir() . '/';
+            if ( ! file_exists( $this->tmp_dir ) ) wp_mkdir_p( $this->tmp_dir );
+            $this->tmp_dir .= self::nspace . '/';
+        }
+        if ( ! file_exists( $this->tmp_dir ) ) wp_mkdir_p( $this->tmp_dir );
+    }
 
 	/**
 	*Translation
