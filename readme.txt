@@ -1,12 +1,9 @@
 === Combine JS ===
 Contributors: timmcdaniels
-Donate link: http://WeAreConvoy.com
-Tags: Javascript, minify
-Requires at least: 3.0.1
+Tags: javascript,combine,minify,gzip,compress
 Tested up to: 3.9.1
 Stable tag: 2.0
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Requires at least: 3.0.1
 
 WordPress plugin that combines, minifies, and compresses JS files.
 
