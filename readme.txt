@@ -2,7 +2,7 @@
 Contributors: timmcdaniels
 Tags: javascript,combine,minify,gzip,compress
 Tested up to: 3.9.1
-Stable tag: 2.0
+Stable tag: 2.1
 Requires at least: 3.0.1
 
 WordPress plugin that combines, minifies, and compresses JS files.
@@ -35,6 +35,9 @@ You can debug the plugin by activating the debug option on the settings page and
 1. This is a screenshot of the Combine JS settings page.
 
 == Changelog ==
+
+= 2.1 =
+* fix flock warning spotted by Manuel Razzari on wpengine.
 
 = 2.0 =
 * Added html output compression and fixed tmp dir issue spotted by jprado.

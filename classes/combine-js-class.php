@@ -7,7 +7,7 @@ class CombineJS {
 	*/
 	const nspace = 'combine-js';
 	const pname = 'Combine JS';
-	const version = 2.0;
+	const version = 2.1;
 
 	protected $_plugin_file;
 	protected $_plugin_dir;
@@ -518,9 +518,9 @@ class CombineJS {
 		if ( is_writable ( dirname( $file ) ) ) {
 			$this->debug( 'Write: ' . $file );
 			$fp = fopen( $file, "w" );
-			if ( flock( $fp, LOCK_EX ) ) { // do an exclusive lock
+			if ( flock( $fp, LOCK_EX, $wouldblock ) ) { // do an exclusive lock
 				fwrite( $fp, $content );
-				flock( $fp, LOCK_UN ); // release the lock
+				flock( $fp, LOCK_UN, $wouldblock ); // release the lock
 			}
 			fclose( $fp );
 		}
